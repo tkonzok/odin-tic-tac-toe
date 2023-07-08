@@ -18,10 +18,19 @@ function Gameboard() {
         board[row][column].addToken(player);
     }
 
+    const eventListener = () => {
+        const boardValues = board.map((row) => row.map((cell) => cell.getValue()));
+        for (let i = 0; i < 3; i++) {
+            let row = document.querySelectorAll(`[row="${i}"]`);
+            for (let j = 0; j < 3; j++) {
+                let cell = row[j];
+                cell.addEventListener('click', function() {game.playRound(i,j)});
+            }
+        }
+    }
+
     const printBoard = () => {
         const boardValues = board.map((row) => row.map((cell) => cell.getValue()));
-        console.log(boardValues[0][0] === "_");
-        const boardDiv = document.getElementById('board');
         for (let i = 0; i < 3; i++) {
             let row = document.querySelectorAll(`[row="${i}"]`);
             for (let j = 0; j < 3; j++) {
@@ -34,7 +43,8 @@ function Gameboard() {
     return {
         getBoard,
         dropToken,
-        printBoard
+        printBoard,
+        eventListener
     }
 }
 
@@ -75,32 +85,46 @@ function GameController(playerOneName = "Player One", playerTwoName = "Player Tw
 
     const getActivePlayer = () => activePlayer;
 
+    const initGame = () => {
+        board.eventListener();
+        board.printBoard();
+        console.log(`${getActivePlayer().name} begins.`)
+    }
+
     const printNewRound = () => {
         board.printBoard();
         console.log(`${getActivePlayer().name}'s turn.`)
     }
 
     const checkForWinner = () => {
+        const currentBoard = board.getBoard().map((row) => row.map((cell) => cell.getValue()));
+        let gameContinues = false;
         for (let i = 0; i < 3; i++) {
-            if (board[i][0].getValue() === board[i][1].getValue() === board[i][2].getValue()) return board[i][0];
+            if (currentBoard[i].includes("_")) {
+                gameContinues = true;
+            } else if (currentBoard[i][0] === currentBoard[i][1] && currentBoard[i][0] === currentBoard[i][2]) return currentBoard[i][0];
         };
         for (let j = 0; j < 3; j++) {
-            if (board[0][j] === board[1][j] === board[2][j]) return board[0][j];
+            if (!currentBoard[0][j].includes("_") && currentBoard[0][j] === currentBoard[1][j] && currentBoard[0][j] === currentBoard[2][j]) return currentBoard[0][j];
         };
-        if (board[0][0] === board[1][1] === board[2][2]) return board[0][0];
-        if (board[0][2] === board[1][1] === board[2][0]) return board[0][2];
-        return "No winner";
+        if (currentBoard[0][0] !== "_" && currentBoard[0][0] === currentBoard[1][1] && currentBoard[0][0] === currentBoard[2][2]) return currentBoard[0][0];
+        if (currentBoard[0][2] !== "_" && currentBoard[0][2] === currentBoard[1][1] && currentBoard[0][2] === currentBoard[2][0]) return currentBoard[0][2];
+        if (gameContinues) return "No winner";
+        return "Draw";
     }
 
     const playRound = (row, column) => {
         board.dropToken(row, column, getActivePlayer().token);
-        // console.log(checkForWinner());
-
-        switchPlayerTurn();
-        printNewRound();
+        const gameStatus = checkForWinner();
+        if (gameStatus === "No winner") {
+            switchPlayerTurn();
+            printNewRound();
+        } else {
+            console.log(gameStatus)
+        }
     };
 
-    printNewRound();
+    initGame();
 
     return {
         playRound,
