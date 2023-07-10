@@ -29,3 +29,15 @@ form {
     font-size: 72px;
     text-align: center;
 }
+
+#text-input {
+    background-color: lightgrey;
+    height: 100px;
+    font-size: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 5px solid;
+    gap: 10px;
+}
